@@ -91,5 +91,3 @@ Restart the server for the changes to take effect, for example using the `Restar
 
 You should start seeing new events show up in the Threat hunting module. You can filter for `data.gworkspace.application: *` to make it easier to see.
 
-![screenshot of Workspace events in Wazuh](/doc/gworkspace%20screenshot.png)
-
