@@ -17,7 +17,7 @@ on.
 Clone this repo in the directory `/var/ossec/wodles`
 ```
 
-> git clone https://github.com/avanwouwe/wazuh-gworkspace.git
+> git clone https://github.com/CamyMesa/wazuh-gworkspace.git
 > ls
 wazuh-gworkspace/
 >chown -R root:wazuh /var/ossec/wodles/gworkspace
