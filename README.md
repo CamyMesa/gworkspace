@@ -40,7 +40,8 @@ This Wazuh wodle integrates **all Google Workspace audit events**, including:
 1. **Create a Service Account & OAuth Client** in Google Workspace
 2. **Install the Wodle**
 
-This repository is an adapted version of https://github.com/avanwouwe/wazuh-gworkspace
+- This repository is an adapted version of https://github.com/avanwouwe/wazuh-gworkspace
+
 ---
 
 ## Frequently Asked Questions
