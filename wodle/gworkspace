@@ -1,0 +1,24 @@
+#!/bin/sh
+# Wodle launcher
+
+
+WPYTHON_BIN="/usr/bin/python3"
+
+SCRIPT_PATH_NAME="$0"
+DIR_NAME="$(cd $(dirname ${SCRIPT_PATH_NAME}); pwd -P)"
+SCRIPT_NAME="$(basename ${SCRIPT_PATH_NAME})"
+
+case ${DIR_NAME} in
+    */active-response/bin | */wodles/*)
+        PYTHON_SCRIPT="${DIR_NAME}/${SCRIPT_NAME}.py"
+    ;;
+    */bin)
+        WAZUH_PATH="$(cd ${DIR_NAME}/..; pwd)"
+        PYTHON_SCRIPT="${WAZUH_PATH}/framework/scripts/$(echo ${SCRIPT_NAME} | sed 's/-/_/g').py"
+    ;;
+    */integrations)
+        PYTHON_SCRIPT="${DIR_NAME}/${SCRIPT_NAME}.py"
+    ;;
+esac
+
+${WPYTHON_BIN} ${PYTHON_SCRIPT} "$@"
