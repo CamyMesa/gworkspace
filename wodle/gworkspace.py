@@ -76,7 +76,9 @@ def get_service(service_name, service_version):
 	credentials = service_account.Credentials.from_service_account_file(KEY_FILE_PATH, scopes=SCOPES)
 	credentials = credentials.with_subject(CONFIG['service_account'])
 
-	return build(service_name, service_version, credentials=credentials, num_retries=MAX_API_RETRIES)
+   # build() ya no acepta num_retries en versiones recientes del cliente
+
+	return build(service_name, service_version, credentials=credentials)
 
 
 def dict_path(dictionary, *path):
@@ -96,7 +98,7 @@ def dict_path(dictionary, *path):
 def get_retry(service, method_name, params, retries):
 	try:
 		method = getattr(service, method_name)
-		return method().list(**params).execute(num_retries = 0)    # don't use inbuilt retry, does not work
+		return method().list(**params).execute()    # don't use inbuilt retry, does not work
 	except:
 		if (retries > 0):
 			backoff = 2 ** (MAX_API_RETRIES - retries)
