@@ -1,97 +1,81 @@
 > [!NOTE]  
-> this wodle works on any Wazuh installation but this how-to assumes a [Wazuh docker deployment](https://github.com/wazuh/wazuh-docker) and may require (slight) adaptation for other deployment methods
+> this wodle was adapted for an all in one Wazuh architecture and may require (slight) adaptation for other deployment methods - 
 
 # add required Python libraries
-The wodle requires the `google-api-python-client` Python library, which is not distributed with the standard Wazuh distribution. To ensure that this library is in the Docker image, first create a custom Dockerfile for the master node. This Dockerfile will build on the standard image provided by Wazuh.
+
 
 ```
-cd  ~/wazuh-docker/multi-node/config/wazuh_cluster/
-cat > master.Dockerfile << EOF
-FROM wazuh/wazuh-manager:4.10.0
-RUN /var/ossec/framework/python/bin/python3 -m pip install google-api-python-client
-EOF
+apt install python3-googleapi python3-google-auth
+
+pip3 --version
 ```
 
-Then change the `docker-compose.yml` to build this custom container instead of using the standard one. Replace this:
-```
-services:
-  wazuh.master:
-    image: wazuh/wazuh-manager:4.10.0
-```
-
-... with this:
-```
-services:
-  wazuh.master:
-    build:
-        dockerfile: ./config/wazuh_cluster/master.Dockerfile
-```
-
-> [!NOTE]  
-> don't forget to update the version numbers of the docker image when you install and whenever you upgrade your installation.
+The wodle requires the `google-api-python-client` Python library, which is not distributed with the standard Wazuh distribution.
+on.
 
 # install wodle
-Clone this repo in the directory where the Wazuh docker repo is cloned
+Clone this repo in the directory `/var/ossec/wodles`
 ```
-> ls
-wazuh-docker
+
 > git clone https://github.com/avanwouwe/wazuh-gworkspace.git
 > ls
-wazuh-docker/
 wazuh-gworkspace/
+>chown -R root:wazuh /var/ossec/wodles/gworkspace
+>chmod -R 750 /var/ossec/wodles/gworkspace
 ```
 
-In the `docker-compose.yml` mount the `/wodle` directory of this repo so that it is available on the Wazuh master.
+
+Copy the file with the GCP service account key you have created previously, by pasting the contents of the JSON file inside the service_account_key.json
+
 ```
-    volumes:
-      - ../../wazuh-gworkspace/wodle:/var/ossec/wodles/gworkspace
+cd /var/ossec/wodles/gworkspace/wodle
+touch service_account_key.json
+cat service_account_key.json
 ```
 
-Now you can rebuild the image and recreate the containers to ensure that the python library is installed and the volume is mounted:
-```
-cd  ~/wazuh-docker/multi-node/
-docker compose down
-docker compose up -d --build
-```
 
-And then create a shell session on the master node:
+Also configure your Google Workspace service account in a file named config.json:
 ```
-docker ps
-docker exec -ti <container id of master container> /bin/bash
-cd /var/ossec/wodles/gworkspace/
-```
+touch config.json
 
-Copy the file with the GCP service account key you have created previously, by pasting the contents of the JSON file after this command, followed by <enter> and <cntrl-D>:
-```
-cat > service_account_key.json
-```
 
-Also configure your Google Workspace service account:
-```
-cat > config.json << EOF
 {
     "service_account": "<E-MAIL OF YOUR GOOGLE WORKSPACE SERVICE ACCOUNT>"
 }
-EOF
+
+Change the privileges if needed
+
+chown -R root:wazuh config.json
+chmod -R 750 config.json
+chown -R root:wazuh service_account_key.json
+chmod -R 750 service_account_key.json
+
+root@WazuhLab4:/var/ossec/wodles/gworkspace/wodle# ll
+total 36
+drwxr-x--- 2 root wazuh 4096 dic 10 09:43 ./
+drwxr-x--- 6 root wazuh 4096 dic  2 17:08 ../
+-rwxr-x--- 1 root wazuh   51 dic  2 16:46 config.json*
+-rwxr-x--- 1 root wazuh   48 dic  2 16:45 .gitignore*
+-rwxr-x--- 1 root wazuh  594 dic  2 17:06 gworkspace*
+-rwxr-x--- 1 root wazuh 9267 dic 10 09:43 gworkspace.py*
+-rwxr-x--- 1 root wazuh 2366 dic  2 16:46 service_account_key.json*
 ```
 
 You can test that the wodle works by running it and checking that it outputs log events in JSON format. The `--unread` parameter ensures that the historical messages will be left unread for the next run. 
 ```
-./gworkspace -a admin --unread
+./gworkspace -a admin --unread | ./gworkspace -a all --unread
 ```
-
-You can then close the shell session.
 
 # add rules
 Events only generate alerts if they are matched by a rule. Go to the rules configuration and create a new rules file `0685-gworkspace_rules.xml` and fill it with the contents of [/rules/0685-gworkspace_rules.xml](/rules/0685-gworkspace_rules.xml).
 
 # change ossec.conf
-Add this wodle configuration to `/var/ossec/etc/ossec.conf` to ensure that the wodle is called periodically by Wazuh. In the Wazuh-provided Docker installion this file is modified in `~/wazuh-docker/multi-node/config/wazuh_cluster`.
+Add this wodle configuration to `/var/ossec/etc/ossec.conf` to ensure that the wodle is called periodically by Wazuh. 
 ```
   <wodle name="command">
     <disabled>no</disabled>
     <tag>gworkspace</tag>
-    <command>/var/ossec/wodles/gworkspace/gworkspace -a all -o 2</command>
+    <command>/var/ossec/wodles/gworkspace/wodle/gworkspac -a all -o 2</command>
     <interval>10m</interval>
     <ignore_output>no</ignore_output>
     <run_on_start>yes</run_on_start>
