@@ -7,7 +7,6 @@
 ```
 apt install python3-googleapi python3-google-auth
 
-pip3 --version
 ```
 
 The wodle requires the `google-api-python-client` Python library, which is not distributed with the standard Wazuh distribution.
