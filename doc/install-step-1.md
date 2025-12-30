@@ -5,7 +5,7 @@ First you will create a **GCP service account**. This service account will use *
 
 At [https://console.cloud.google.com/](https://console.cloud.google.com/) create a new project called `Wazuh`.
 
-<img width="2372" height="838" alt="image" src="https://github.com/user-attachments/assets/65e0c9c4-7596-4a2e-a63c-af0101364cb9" />
+<img width="1206" height="705" alt="image" src="https://github.com/user-attachments/assets/ae443289-988a-48eb-a968-b6a2743d4fb2" />
 
 
 In the [Enabled API & services](https://console.cloud.google.com/apis/library) enable:
